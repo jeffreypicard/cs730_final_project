@@ -4,19 +4,22 @@ StateNode.py
 Author Jeffrey Picard
 '''
 
+from State import State
+
 class StateNode:
   '''
   Class to represent a node of the search tree.
   '''
 
-  def __init__(self, state, g=0, h=0):
+  def __init__(self, state, g=0, h=0, parentDis=0):
     '''
     Constructor
     '''
-    self.state = state
-    self.g     = g
-    self.h     = h
-    self.f     = g+h
+    self.state      = state
+    self.g          = g
+    self.h          = h
+    self.f          = g+h
+    self.parentDis  = parentDis
 
   def expand(self, theWorld, h='h0', expandAll=False):
     '''
@@ -29,32 +32,110 @@ class StateNode:
     }
     children = []
 
+    depthIncrease = 1
+
     newState = self.state.vacuum()
     if newState != None:
-      newNode = StateNode( newState, self.g+1, heuristics[h](newState) )
+      newNode = StateNode( newState, self.g+depthIncrease, heuristics[h](newState), self.parentDis )
       children.append(newNode)
       if expandAll == False:
         return children
 
-    newState = self.state.moveNorth(theWorld)
+    ############# Testing phase for JPS ###############
+
+    if theWorld.jps:
+      successors = theWorld.identifySuccessors( self.state, theWorld.start, self.state.dirtList, self.parentDis )
+      if successors != []:
+        print("State")
+        print( self.state.printString( theWorld ) )
+        print("Successors")
+        for s in successors:
+          newState = State( (s[0],s[1]), self.state.dirtList, s[2] )
+          print(newState.printString(theWorld))
+          newNode = StateNode( newState, self.g+depthIncrease+s[3], heuristics[h](newState), s[3] )
+          children.append( newNode )
+        return children
+    '''
+
+    print( self.state.printString( theWorld ) ) 
+    print("Successors:")
+    for s in successors:
+      print( "\t" + str(s) )
+    print("\n")
+    '''
+    print("No jump points")
+    ############# End testing phase for JPS ##############
+
+    ############# north #############
+
+    if (self.state.curLoc,'n') in theWorld.edges:
+      jump = theWorld.edges[ (self.state.curLoc, 'n') ]
+    else:
+      jump = None
+
+    if jump:
+      newState = self.state.moveNorth(theWorld,jump)
+      depthIncrease = jump[1]
+    else:
+      newState = self.state.moveNorth(theWorld)
     if newState != None:
-      newNode = StateNode( newState, self.g+1, heuristics[h](newState) )
+      newNode = StateNode( newState, self.g+depthIncrease, heuristics[h](newState) )
       children.append(newNode)
 
-    newState = self.state.moveSouth(theWorld)
+    ############# south #############
+
+    if (self.state.curLoc, 's') in theWorld.edges:
+      jump = theWorld.edges[ (self.state.curLoc,'s') ]
+    else:
+      jump = None
+
+    depthIncrease = 1
+    if jump:
+      newState = self.state.moveSouth(theWorld,jump)
+      depthIncrease = jump[1]
+    else:
+      newState = self.state.moveSouth(theWorld)
     if newState != None:
-      newNode = StateNode( newState, self.g+1, heuristics[h](newState) )
+      newNode = StateNode( newState, self.g+depthIncrease, heuristics[h](newState) )
       children.append(newNode)
 
-    newState = self.state.moveEast(theWorld)
+    ############# east #############
+
+    if (self.state.curLoc, 'e') in theWorld.edges:
+      jump = theWorld.edges[ (self.state.curLoc,'e') ]
+    else:
+      jump = None
+
+    depthIncrease = 1
+    if jump:
+      newState = self.state.moveEast(theWorld,jump)
+      depthIncrease = jump[1]
+    else:
+      newState = self.state.moveEast(theWorld)
     if newState != None:
-      newNode = StateNode( newState, self.g+1, heuristics[h](newState) )
+      newNode = StateNode( newState, self.g+depthIncrease, heuristics[h](newState) )
       children.append(newNode)
 
-    newState = self.state.moveWest(theWorld)
+    ############# west #############
+
+    if (self.state.curLoc, 'w') in theWorld.edges:
+      jump = theWorld.edges[ (self.state.curLoc,'w') ]
+    else:
+      jump = None
+
+    depthIncrease = 1
+    if jump:
+      newState = self.state.moveWest(theWorld,jump)
+      depthIncrease = jump[1]
+    else:
+      newState = self.state.moveWest(theWorld)
     if newState != None:
-      newNode = StateNode( newState, self.g+1, heuristics[h](newState) )
+      newNode = StateNode( newState, self.g+depthIncrease, heuristics[h](newState) )
       children.append(newNode)
+
+    print("children")
+    for c in children:
+      print( c.state.printString(theWorld) )
 
     return children
 

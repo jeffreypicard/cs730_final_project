@@ -6,5 +6,5 @@ vacuum-plan-reference
 make-vw
 *.vw
 *prof
-lol
+lol*
 *.out

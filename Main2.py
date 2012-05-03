@@ -43,6 +43,13 @@ class Main:
     }
 
     self.heuristic  = ''
+
+    self.speedups = {
+    'rsr': 1,
+    'jps': 1
+    }
+
+    self.speedup = ''
     
 
   def parseWorld(self):
@@ -79,6 +86,12 @@ class Main:
         else:
           print("Error: Unknown heuristic")
           exit(1)
+        if len(sys.argv) == 4:
+          if sys.argv[3] in self.speedups:
+            self.speedup = sys.argv[3]
+          else:
+            print("Error: Unknown speed-up algorithm")
+            exit(1)
       else:
         print("Error: No heuristic specified")
         exit(1)
@@ -88,9 +101,11 @@ if __name__ == "__main__":
   main = Main()
   main.parseCommandLine()
   world = main.parseWorld()
-  print( world.toString() )
-  world.RSRDecomposition()
-  '''
+  #print( world.toString() )
+  if main.speedup == 'rsr':
+    world.RSRDecomposition()
+  elif main.speedup == 'jps':
+    world.jps = True
   startState = State( world.start, world.dirt )
 
   endState = None
@@ -115,4 +130,3 @@ if __name__ == "__main__":
     print( endState.toString() )
     print(str(GlobalVars.nodesGenerated) + " nodes generated\n" +
           str(GlobalVars.nodesExpanded)  + " nodes expanded")
-  '''

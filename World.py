@@ -26,6 +26,8 @@ class World:
     self.dirt     = self.dirtList()
     self.start    = self.startPoint()
     self.uList    = self.makeUList()
+    self.edges    = []
+    self.jps      = False
   
   def blocked(self, loc):
     '''
@@ -131,11 +133,19 @@ class World:
         #print( self.RSRDataToString() )
       else:
         heapq.heappush(Q,(-a[1].size,a[1]))
-    for room in rooms:
-      print( "size: " + str(room.size) )
-      print( "\tul: " + str(room.ul) )
-      print ( "\tbr: " + str(room.br) )
-    print( self.RSRDataToString() )
+    #for room in rooms:
+    #  print( "size: " + str(room.size) )
+    #  print( "\tul: " + str(room.ul) )
+    #  print ( "\tbr: " + str(room.br) )
+    #print( self.toString() )
+    self.calcMacroEdges( rooms )
+    #print( self.RSRDataToString() )
+    #for edge in self.edges:
+    #  print( str(edge) + ": " + str(self.edges[edge]))
+    for r in rooms:
+      r.fixEdges( self.edges, self.dirt )
+    #for edge in self.edges:
+    #  print( str(edge) + ": " + str(self.edges[edge]))
 
   def calcPriority( self, room ):
     '''
@@ -177,60 +187,54 @@ class World:
         j = j + 1
       i = i + 1
 
-    '''
-    i = i_b
-    j = j_b
-    blocked = False
-    while True:
-      if self.data[i][j] == '#' or j == self.columns-1:
-        if (i-i_b+1)*(j-j_b+1) > priority:
-          priority = (i-i_b+1)*(j-j_b+1)
-        break
-      i = i_b
-      while True:
-        if self.data[i][j] == '#' or i == self.rows-1:
-          if (i-i_b+1)*(j-j_b+1) > priority:
-            priority = (i-i_b+1)*(j-j_b+1)
-          blocked = True
-          break
-        i = i + 1
-      if blocked:
-        break
-      j = j + 1
-    '''
-    '''
-    blocked = False
-    while j < self.columns:
-      for k in range(i_b,self.rows):
-        if self.data[k][j] == '#':
-          blocked = True
-          break
-      if blocked:
-        break
-      j = j+1
-    priority = (i-i_b)*(j-j_b)
-
-    i = i_b
-    j = j_b
-    while j < self.columns:
-      if self.data[i][j] == '#':
-        break
-      j = j + 1
-    blocked = False
-    while i < self.rows:
-      for k in range(j_b,self.columns):
-        if self.data[i][k] == '#':
-          blocked = True
-          break
-      if blocked:
-        break
-      i = i+1
-    if (i-i_b)*(j-j_b) > priority:
-      priority = (i-i_b)*(j-j_b)
-    '''
     #if priority == 27:
     #  print( "i="+str(i_b)+",j="+str(j_b) )
     room.size = priority
+
+  def calcMacroEdges( self, rooms ):
+    '''
+    Takes a list of rooms and calculates the macro
+    edges required in order to make use of RSR in the
+    search.
+    '''
+    # edges[(x,y,direction)] = ((i,j),length)
+    edges = {}
+    for room in rooms:
+      '''
+      i_b = room.ul[0]+1
+      j_b = room.ul[1]+1
+      i_e = room.br[0]-1
+      j_e = room.br[1]-1
+      for i in range(i_b,i_e):
+        for j in range(j_b,j_e):
+          self.RSRData[i][j] = '!'
+      '''
+      i_b = room.ul[0]+1
+      j_b = room.ul[1]
+      i_e = room.br[0]-1
+      j_e = room.br[1]-1
+      for i in range(i_b,i_e):
+        #print( "i: " + str(i) + ",j: " + str(j_b) )
+        #edges[(i,j_b)] = ((i,j_e),'e',j_e-j_b)
+        edges[((i,j_b),'e')] = ((i,j_e),j_e-j_b)
+        #edges[(i,j_e)] = ((i,j_b),'w',j_e-j_b)
+        edges[((i,j_e),'w')] = ((i,j_b),j_e-j_b)
+        #print( str(edges[(i,j_b)]) )
+
+      i_b = room.ul[0]
+      j_b = room.ul[1]+1
+      i_e = room.br[0]-1
+      j_e = room.br[1]-1
+      for j in range(j_b,j_e):
+        #print( str((i_b,j)) )
+        #edges[(i_b,j)] = ((i_e,j),'s',i_e-i_b)
+        edges[((i_b,j),'s')] = ((i_e,j),i_e-i_b)
+        #edges[(i_e,j)] = ((i_b,j),'n',i_e-i_b)
+        edges[((i_e,j),'n')] = ((i_b,j),i_e-i_b)
+        #print( str(edges[(i_b,j)]) )
+    #print( str(len(edges)) )
+    #print( str(edges) )
+    self.edges = edges
 
   def roomFill( self, room ):
     '''
@@ -247,3 +251,237 @@ class World:
     for i in range(i_b,i_e):
       for j in range(j_b,j_e):
         self.RSRData[i][j] = '+'
+
+  def identifySuccessors( self, stateNode, start, goals, parentDis ):
+    '''
+    Takes a node and identifies its successor nodes.
+    '''
+    successors = []
+    curLoc = stateNode.curLoc
+    node = (curLoc[0],curLoc[1],stateNode.actions,0)
+    #nList = self.prune( node, self.neighbors( node ) )
+    nList = self.pruneNeighbors( node, parentDis )
+    #nList = self.neighbors( node )
+    for n in nList:
+      print("Jumping")
+      n = self.jump( node, n[2].pop(), start, goals )
+      if n:
+        successors.append( n )
+    return successors
+
+  def pruneNeighbors( self, node, parentDis ):
+    '''
+    Takes a node and returns its pruned neighbors.
+    '''
+    #n1 = (node[0]-1,node[1],[ x for x in node[2] ], node[3]+1 ) # North
+    #n2 = (node[0]+1,node[1],[ x for x in node[2] ], node[3]+1 ) # South
+    #n3 = (node[0],node[1]-1,[ x for x in node[2] ], node[3]+1 ) # West
+    #n4 = (node[0],node[1]+1,[ x for x in node[2] ], node[3]+1 ) # East
+    n1 = (node[0]-1,node[1],['N'], node[3]+1 ) # North
+    n2 = (node[0]+1,node[1],['S'], node[3]+1 ) # South
+    n3 = (node[0],node[1]-1,['W'], node[3]+1 ) # West
+    n4 = (node[0],node[1]+1,['E'], node[3]+1 ) # East
+    neighbors = []
+    '''
+    elif parentDis > 1:
+      lastMove = node[2][len(node[2])-1]
+      if lastMove == 'V':
+        lastMove = node[2][len(node[2])-2]
+
+      #print("Last move: " + lastMove )
+      if lastMove != 'S' and n1[0] >= 0 and not self.blocked( n1 ):
+        #n1[2].append('N')
+        neighbors.append( n1 )
+      if lastMove != 'N' and n2[0] < self.rows and not self.blocked( n2 ):
+        #n2[2].append('S')
+        neighbors.append( n2 )
+      if lastMove != 'E' and n3[1] >= 0 and not self.blocked( n3 ):
+        #n3[2].append('W')
+        neighbors.append( n3 )
+      if lastMove != 'W' and n4[1] < self.columns and not self.blocked( n4 ):
+        #n4[2].append('E')
+        neighbors.append( n4 )
+    '''
+    #if node[2] == []:
+    if True:
+      if n1[0] >= 0 and not self.blocked( n1 ):
+        #n1[2].append('N')
+        neighbors.append( n1 )
+      if n2[0] < self.rows and not self.blocked( n2 ):
+        #n2[2].append('S')
+        neighbors.append( n2 )
+      if n3[1] >= 0 and not self.blocked( n3 ):
+        #n3[2].append('W')
+        neighbors.append( n3 )
+      if n4[1] < self.columns and not self.blocked( n4 ):
+        #n4[2].append('E')
+        neighbors.append( n4 )
+    else:
+      lastMove = node[2][len(node[2])-1]
+      if lastMove == 'V':
+        lastMove = node[2][len(node[2])-2]
+      if lastMove == 'N':
+        pX = (node[0]+1,node[1])
+        pXW = (node[0]+1,node[1]-1)
+        pXE = (node[0]+1,node[1]+1)
+        if n1[0] >= 0 and not self.blocked( n1 ):
+          #n1[2].append('N')
+          neighbors.append( n1 )
+        if pXW[1] >= 0 and self.blocked( pXW ):
+          if not self.blocked( n3 ):
+            #n3[2].append('W')
+            neighbors.append( n3 )
+        if pXE[1] < self.columns and self.blocked( pXE ):
+          if not self.blocked( n4 ):
+            #n4[2].append('E')
+            neighbors.append( n4 )
+      elif lastMove == 'S':
+        pX = (node[0]-1,node[1])
+        pXW = (node[0]-1,node[1]-1)
+        pXE = (node[0]-1,node[1]+1)
+        if n2[0] < 0 and not self.blocked( n2 ):
+          #n2[2].append('S')
+          neighbors.append( n2 )
+        if pXW[1] >= 0 and self.blocked( pXW ):
+          if not self.blocked( n3 ):
+            #n3[2].append('W')
+            neighbors.append( n3 )
+        if pXE[1] < self.columns and self.blocked( pXE ):
+          if not self.blocked( n4 ):
+            #n4[2].append('E')
+            neighbors.append( n4 )
+      elif lastMove == 'W':
+        pX = (node[0],node[1]+1)
+        pXN = (node[0]-1,node[1]+1) # North
+        pXS = (node[0]+1,node[1]+1) # South
+        if n3[1] >= 0 and not self.blocked( n3 ):
+          #n3[2].append('W')
+          neighbors.append( n3 )
+        if pXN[0] >= 0 and self.blocked( pXN ):
+          if not self.blocked( n1 ):
+            #n1[2].append('N')
+            neighbors.append( n1 )
+        if pXS[0] < self.rows and self.blocked( pXS ):
+          #print("pXS blocked.")
+          if not self.blocked( n2 ):
+            #n2[2].append('S')
+            neighbors.append( n2 )
+      elif lastMove == 'E':
+        pX = (node[0],node[1]-1)
+        pXN = (node[0]-1,node[1]-1) # North
+        pXS = (node[0]+1,node[1]-1) # South
+        if n4[1] < self.columns and not self.blocked( n4 ):
+          #n4[2].append('E')
+          neighbors.append( n4 )
+        if pXN[0] >= 0 and self.blocked( pXN ):
+          if not self.blocked( n1 ):
+            #n1[2].append('N')
+            neighbors.append( n1 )
+        if pXS[0] < self.rows and self.blocked( pXS ):
+          if not self.blocked( n2 ):
+            #n2[2].append('S')
+            neighbors.append( n2 )
+      else:
+        print("Error: bad lastMove " + lastMove )
+        exit(1)
+
+    return neighbors
+
+  def neighbors( self, node ):
+    '''
+    Takes a node and returns list of its
+    valid neighbors.
+    '''
+    n1 = (node[0]-1,node[1],[ x for x in node[2] ], node[3]+1 ) # North
+    n2 = (node[0]+1,node[1],[ x for x in node[2] ], node[3]+1 ) # South
+    n3 = (node[0],node[1]-1,[ x for x in node[2] ], node[3]+1 ) # West
+    n4 = (node[0],node[1]+1,[ x for x in node[2] ], node[3]+1 ) # East
+    neighbors = []
+    if n1[0] >= 0 and not self.blocked( n1 ):
+      n1[2].append('N')
+      neighbors.append( n1 )
+    if n2[0] < self.rows and not self.blocked( n2 ):
+      n2[2].append('S')
+      neighbors.append( n2 )
+    if n3[1] >= 0 and not self.blocked( n3 ):
+      n3[2].append('W')
+      neighbors.append( n3 )
+    if n4[1] < self.columns and not self.blocked( n4 ):
+      n4[2].append('E')
+      neighbors.append( n4 )
+
+    return neighbors
+
+  def direction( self, node, n ):
+    '''
+    Takes a node and a neighbor and returns
+    the direction of travel to get to that
+    neighbor.
+    '''
+
+  def step( self, node, direction ):
+    '''
+    Takes a node and a direction of travel and returns
+    the node at that location.
+    '''
+    #direction = actionList[ len(actionList)-1 ]
+    if direction == 'N':
+      n = (node[0]-1,node[1],[ x for x in node[2] ], node[3]+1 )
+      if n[0] >= 0 and not self.blocked( n ):
+        n[2].append('N')
+        return n
+      else:
+        return None
+    elif direction == 'S':
+      n = (node[0]+1,node[1],[ x for x in node[2] ], node[3]+1 )
+      if n[0] < self.rows and not self.blocked( n ):
+        n[2].append('S')
+        return n
+      else:
+        return None
+    elif direction == 'W':
+      n = (node[0],node[1]-1,[ x for x in node[2] ], node[3]+1 )
+      if n[1] >= 0 and not self.blocked( n ):
+        n[2].append('W')
+        return n
+      else:
+        return None
+    else:
+      n = (node[0],node[1]+1,[ x for x in node[2] ], node[3]+1 )
+      if n[1] < self.columns and not self.blocked( n ):
+        n[2].append('E')
+        return n
+      else:
+        return None
+
+  def forcedNeighbor( self, node, direction ):
+    '''
+    Takes a node and return a boolean as to whether
+    it has a neighbor which is forced.
+    '''
+    #print("forcedNeighbor")
+    #print( len(self.pruneNeighbors(node)) )
+    ns = self.pruneNeighbors( node, 1 )
+    for n in ns:
+      if n[2][ len(n[2])-1 ] != direction:
+        return True
+    return False
+    #return len(self.pruneNeighbors( node, 1 )) > 0
+
+  def jump( self, node, direction, start, goalList ):
+    '''
+    Takes a node and a direction and identifies the jump
+    point recursively.
+    '''
+    #else:
+      #print("Not goal")
+      #print( str(node) )
+    n = self.step( node, direction )
+    print(str(n))
+    if not n:
+      return None
+    if (n[0],n[1]) in goalList:
+      return n
+    if self.forcedNeighbor( n, direction ):
+      return n
+    return self.jump( n, n[2][len(n[2])-1], start, goalList )
