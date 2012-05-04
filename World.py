@@ -7,6 +7,7 @@ Author: Jeffrey Picard
 from State import State
 from Room import Room
 import heapq
+import math
 
 class World:
   '''
@@ -28,6 +29,7 @@ class World:
     self.uList    = self.makeUList()
     self.edges    = []
     self.jps      = False
+    self.EightWayMove = False
   
   def blocked(self, loc):
     '''
@@ -264,10 +266,11 @@ class World:
     #nList = self.neighbors( node )
     for n in nList:
       print("Jumping")
-      n = self.jump( node, n[2].pop(), start, goals )
+      n = self.jump( node, n[2], start, goals )
       if n:
         successors.append( n )
     return successors
+
 
   def pruneNeighbors( self, node, parentDis ):
     '''
@@ -277,10 +280,18 @@ class World:
     #n2 = (node[0]+1,node[1],[ x for x in node[2] ], node[3]+1 ) # South
     #n3 = (node[0],node[1]-1,[ x for x in node[2] ], node[3]+1 ) # West
     #n4 = (node[0],node[1]+1,[ x for x in node[2] ], node[3]+1 ) # East
-    n1 = (node[0]-1,node[1],['N'], node[3]+1 ) # North
-    n2 = (node[0]+1,node[1],['S'], node[3]+1 ) # South
-    n3 = (node[0],node[1]-1,['W'], node[3]+1 ) # West
-    n4 = (node[0],node[1]+1,['E'], node[3]+1 ) # East
+    #n1 = (node[0]-1,node[1],['N'], node[3]+1 ) # North
+    #n2 = (node[0]+1,node[1],['S'], node[3]+1 ) # South
+    #n3 = (node[0],node[1]-1,['W'], node[3]+1 ) # West
+    #n4 = (node[0],node[1]+1,['E'], node[3]+1 ) # East
+    n   = (node[0]-1,node[1],'N') # North
+    nw  = (node[0]-1,node[1]-1,'NW')
+    ne  = (node[0]-1,node[1]+1,'NE')
+    s   = (node[0]+1,node[1],'S') # South
+    sw  = (node[0]+1,node[1]-1,'SW')
+    se  = (node[0]+1,node[1]+1,'SE')
+    w   = (node[0],node[1]-1,'W') # West
+    e   = (node[0],node[1]+1,'E') # East
     neighbors = []
     '''
     elif parentDis > 1:
@@ -303,6 +314,7 @@ class World:
         neighbors.append( n4 )
     '''
     #if node[2] == []:
+    '''
     if True:
       if n1[0] >= 0 and not self.blocked( n1 ):
         #n1[2].append('N')
@@ -316,6 +328,123 @@ class World:
       if n4[1] < self.columns and not self.blocked( n4 ):
         #n4[2].append('E')
         neighbors.append( n4 )
+    '''
+    if node[2] == [] or node[2][len(node[2])-1] == 'V':
+      if n[0] >= 0 and not self.blocked( n ):
+        neighbors.append( n )
+      if nw[0] >= 0 and nw[1] >= 0 and not self.blocked( nw ):
+        neighbors.append( nw )
+      if ne[0] >= 0 and ne[1] < self.columns and not self.blocked( ne ):
+        neighbors.append( ne )
+      if s[0] < self.rows and not self.blocked( s ):
+        neighbors.append( s )
+      if sw[0] < self.rows and sw[1] >= 0 and not self.blocked( sw ):
+        neighbors.append( sw )
+      if se[0] < self.rows and se[1] < self.columns and not self.blocked( se ):
+        neighbors.append( se )
+      if w[1] >= 0 and not self.blocked( w ):
+        neighbors.append( w )
+      if e[1] < self.columns and not self.blocked( e ):
+        neighbors.append( e )
+    else:
+      lastMove = node[2][len(node[2])-1]
+      if lastMove == 'V':
+        lastMove = node[2][len(node[2])-2]
+      print("lastMove: " + lastMove )
+
+      if lastMove == 'N':
+        if n[0] >= 0 and not self.blocked( n ):
+          neighbors.append( n )
+        if w[1] >= 0 and self.blocked( w ):
+          if nw[0] >= 0 and nw[1] >= 0 and not self.blocked( nw ):
+            neighbors.append( nw )
+        if e[1] < self.columns and self.blocked( e ):
+          if ne[0] >= 0 and ne[1] < self.columns and not self.blocked( ne ):
+            neighbors.append( ne )
+      elif lastMove == 'NW':
+        if nw[0] >= 0 and nw[1] >= 0 and not self.blocked( nw ):
+          neighbors.append( nw )
+        if n[0] >= 0 and not self.blocked( n ):
+          neighbors.append( n )
+        if w[1] >= 0 and not self.blocked( w ):
+          neighbors.append( w )
+        if s[0] < self.rows and self.blocked( s ):
+          if sw[0] < self.rows and sw[1] >= 0 and not self.blocked( sw ):
+            neighbors.append( sw )
+        if e[1] < self.columns and self.blocked( e ):
+          if ne[0] >= 0 and ne[1] < self.columns and not self.blocked( ne ):
+            neighbors.append( ne )
+      elif lastMove == 'NE':
+        if ne[0] >= 0 and ne[1] < self.columns and not self.blocked( ne ):
+          neighbors.append( ne )
+        if n[0] >= 0 and not self.blocked( n ):
+          neighbors.append( n )
+        if e[1] < self.columns and not self.blocked( e ):
+          neighbors.append( e )
+        if s[0] < self.rows and self.blocked( s ):
+          if se[0] < self.rows and se[1] < self.columns and not self.blocked( se ):
+            neighbors.append( se )
+        if w[1] >= 0 and self.blocked( w ):
+          if nw[0] >= 0 and nw[1] >= 0 and not self.blocked( nw ):
+            neighbors.append( nw )
+      elif lastMove == 'S':
+        if s[0] < self.rows and not self.blocked( s ):
+          neighbors.append( s )
+        if w[1] >= 0 and self.blocked( w ):
+          if sw[0] < self.rows and sw[1] >= 0 and not self.blocked( sw ):
+            neighbors.append( sw )
+        if e[1] < self.columns and self.blocked( e ):
+          if se[0] < self.rows and se[1] < self.columns and not self.blocked( se ):
+            neighbors.append( se )
+      elif lastMove == 'SW':
+        if sw[0] < self.rows and sw[1] >= 0 and not self.blocked( sw ):
+          neighbors.append( sw )
+        if s[0] < self.rows and not self.blocked( s ):
+          neighbors.append( s )
+        if w[1] >= 0 and not self.blocked( w ):
+          neighbors.append( w )
+        if n[0] >= 0 and self.blocked( n ):
+          if nw[0] >= 0 and nw[1] >= 0 and not self.blocked( nw ):
+            neighbors.append( nw )
+        if e[1] < self.columns and self.blocked( e ):
+          if se[0] < self.rows and se[1] < self.columns and not self.blocked( se ):
+            neighbors.append( se )
+      elif lastMove == 'SE':
+        if se[0] < self.rows and se[1] < self.columns and not self.blocked( se ):
+          neighbors.append( se )
+        if s[0] < self.rows and not self.blocked( s ):
+          neighbors.append( s )
+        if e[1] < self.columns and not self.blocked( e ):
+          neighbors.append( e )
+        if n[0] >= 0 and self.blocked( n ):
+          if ne[0] >= 0 and ne[1] < self.columns and not self.blocked( ne ):
+            neighbors.append( ne )
+        if w[1] >= 0 and self.blocked( w ):
+          if sw[0] < self.rows and sw[1] >= 0 and not self.blocked( sw ):
+            neighbors.append( sw )
+      elif lastMove == 'W':
+        if w[1] >= 0 and not self.blocked( w ):
+          neighbors.append( w )
+        if s[0] < self.rows and self.blocked( s ):
+          if sw[0] < self.rows and sw[1] >= 0 and not self.blocked( sw ):
+            neighbors.append( sw )
+        if n[0] >= 0 and self.blocked( n ):
+          if nw[0] >= 0 and nw[1] >= 0 and not self.blocked( nw ):
+            neighbors.append( nw )
+      elif lastMove == 'E':
+        if e[1] < self.columns and not self.blocked( e ):
+          neighbors.append( e )
+        if s[0] < self.rows and self.blocked( s ):
+          if se[0] < self.rows and se[1] < self.columns and not self.blocked( se ):
+            neighbors.append( se )
+        if n[0] >= 0 and self.blocked( n ):
+          if ne[0] >= 0 and ne[1] < self.columns and not self.blocked( ne ):
+            neighbors.append( ne )
+      else:
+        print("Error: bad lastMove")
+        exit(1)
+
+    '''
     else:
       lastMove = node[2][len(node[2])-1]
       if lastMove == 'V':
@@ -384,6 +513,7 @@ class World:
       else:
         print("Error: bad lastMove " + lastMove )
         exit(1)
+      '''
 
     return neighbors
 
@@ -396,6 +526,7 @@ class World:
     n2 = (node[0]+1,node[1],[ x for x in node[2] ], node[3]+1 ) # South
     n3 = (node[0],node[1]-1,[ x for x in node[2] ], node[3]+1 ) # West
     n4 = (node[0],node[1]+1,[ x for x in node[2] ], node[3]+1 ) # East
+
     neighbors = []
     if n1[0] >= 0 and not self.blocked( n1 ):
       n1[2].append('N')
@@ -425,34 +556,51 @@ class World:
     the node at that location.
     '''
     #direction = actionList[ len(actionList)-1 ]
+
     if direction == 'N':
       n = (node[0]-1,node[1],[ x for x in node[2] ], node[3]+1 )
       if n[0] >= 0 and not self.blocked( n ):
         n[2].append('N')
         return n
-      else:
-        return None
+    elif direction == 'NW':
+      nw = (node[0]-1,node[1]-1,[x for x in node[2] ], node[3]+math.sqrt(2) )
+      if nw[0] >= 0 and nw[1] >= 0 and not self.blocked( nw ):
+        nw[2].append('NW')
+        return nw
+    elif direction == 'NE':
+      ne = (node[0]-1,node[1]+1,[x for x in node[2] ], node[3]+math.sqrt(2) )
+      if ne[0] >= 0 and ne[1] < self.columns and not self.blocked( ne ):
+        ne[2].append('NE') 
+        return ne
     elif direction == 'S':
       n = (node[0]+1,node[1],[ x for x in node[2] ], node[3]+1 )
       if n[0] < self.rows and not self.blocked( n ):
         n[2].append('S')
         return n
-      else:
-        return None
+    elif direction == 'SW':
+      sw = (node[0]+1,node[1]-1,[x for x in node[2]], node[3]+math.sqrt(2) )
+      if sw[0] < self.rows and sw[1] >= 0 and not self.blocked( sw ):
+        sw[2].append('SW')
+        return sw
+    elif direction == 'SE':
+      se = (node[0]+1,node[1]+1,[x for x in node[2]], node[3]+math.sqrt(2) )
+      if se[0] < self.rows and se[1] < self.columns and not self.blocked( se ):
+        se[2].append('SE')
+        return se
     elif direction == 'W':
       n = (node[0],node[1]-1,[ x for x in node[2] ], node[3]+1 )
       if n[1] >= 0 and not self.blocked( n ):
         n[2].append('W')
         return n
-      else:
-        return None
-    else:
+    elif direction == 'E':
       n = (node[0],node[1]+1,[ x for x in node[2] ], node[3]+1 )
       if n[1] < self.columns and not self.blocked( n ):
         n[2].append('E')
         return n
-      else:
-        return None
+    else:
+      print("Error: in step unknown direction " + direction)
+      exit(1)
+    return None
 
   def forcedNeighbor( self, node, direction ):
     '''
@@ -462,11 +610,60 @@ class World:
     #print("forcedNeighbor")
     #print( len(self.pruneNeighbors(node)) )
     ns = self.pruneNeighbors( node, 1 )
-    for n in ns:
-      if n[2][ len(n[2])-1 ] != direction:
-        return True
+    #print( str(ns) )
+    if direction == 'N' or direction == 'S' or direction == 'E' or direction == 'W':
+      for n in ns:
+        if n[2] != direction:
+          #print("forcedNeighbor: " + n[2] )
+          return True
+    elif direction == 'NW':
+      for n in ns:
+        nD = n[2]
+        if nD != direction and nD != 'N' and nD != 'W':
+          #print("forcedNeighbor: " + n[2] )
+          return True
+    elif direction == 'NE':
+      for n in ns:
+        nD = n[2]
+        if nD != direction and nD != 'N' and nD != 'E':
+          #print("forcedNeighbor: " + n[2] )
+          return True
+    elif direction == 'SW':
+      for n in ns:
+        nD = n[2]
+        if nD != direction and nD != 'S' and nD != 'W':
+          #print("forcedNeighbor: " + n[2] )
+          return True
+    elif direction == 'SE':
+      for n in ns:
+        nD = n[2]
+        if nD != direction and nD != 'S' and nD != 'E':
+          #print("forcedNeighbor: " + n[2] )
+          return True
     return False
     #return len(self.pruneNeighbors( node, 1 )) > 0
+
+  def getDi( self, direction ):
+    '''
+    Takes a diagonal direction and return d1 and d2
+    that are the two straight moves at 45% from
+    the diagonal move. Returns an empty list
+    if the move is straight.
+    '''
+    if direction == 'N' or direction == 'S' or direction == 'E' or direction == 'W':
+      return ()
+    elif direction == 'NW':
+      return ('N','W')
+    elif direction == 'NE':
+      return ('N','E')
+    elif direction == 'SW':
+      return ('S','W')
+    elif direction == 'SE':
+      return ('S','E')
+    else:
+      print("Error: in getDi bad direction " + direction )
+      exit(1)
+
 
   def jump( self, node, direction, start, goalList ):
     '''
@@ -477,11 +674,14 @@ class World:
       #print("Not goal")
       #print( str(node) )
     n = self.step( node, direction )
-    print(str(n))
+    #print(str(n))
     if not n:
       return None
     if (n[0],n[1]) in goalList:
       return n
     if self.forcedNeighbor( n, direction ):
       return n
-    return self.jump( n, n[2][len(n[2])-1], start, goalList )
+    for di in self.getDi( direction ):
+      if self.jump( n, di, start, goalList ):
+        return n
+    return self.jump( n, n[2][ len(n[2])-1 ], start, goalList )

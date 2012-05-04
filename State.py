@@ -5,6 +5,7 @@ State.py
 '''
 
 from copy import deepcopy
+import math
 
 class State:
   '''
@@ -50,6 +51,18 @@ class State:
         string = string + '\n'
     return string
   
+  def pathCost( self ):
+    '''
+    Returns the cost of the path to the state.
+    '''
+    cost = 0
+    for x in self.actions:
+      if len(x) == 1:
+        cost = cost + 1
+      elif len(x) == 2:
+        cost = cost + math.sqrt(2)
+    return cost
+
   def toString(self,newLine=True):
     '''
     Returns a string representation of the state
@@ -156,6 +169,7 @@ class State:
       newState.dirtList.remove((self.curLoc[0],self.curLoc[1]))
       return newState
     else:
+      #print( str(self.curLoc) + "Not dirty" )
       return None
   
   def moveNorth(self, theWorld, jump=None):
@@ -203,9 +217,32 @@ class State:
     newState = deepcopy(self)
     newState.curLoc = proposedLoc
     for i in range(0,M):
-      newState.actions.append('N')
+      newState.actions.append('NW')
     return newState
 
+  def moveNorthEast(self, theWorld, jump=None):
+    '''
+    Attempts to move north west
+    '''
+    M = 1
+    if self.curLoc in self.dirtList:
+      #print("NORTH?!?!?")
+      #return None
+      pass
+    if jump:
+      proposedLoc = jump[0]
+      M = jump[1]
+    else:
+      if self.curLoc[0] == 0 or self.curLoc[1] == theWorld.columns-1:
+        return None
+      proposedLoc = (self.curLoc[0]-1,self.curLoc[1]+1)
+      if theWorld.blocked(proposedLoc):
+        return None
+    newState = deepcopy(self)
+    newState.curLoc = proposedLoc
+    for i in range(0,M):
+      newState.actions.append('NE')
+    return newState
 
   def moveSouth(self, theWorld, jump=None):
     '''
@@ -229,6 +266,54 @@ class State:
     newState.curLoc = proposedLoc
     for i in range(0,M):
       newState.actions.append('S')
+    return newState
+
+  def moveSouthWest(self, theWorld, jump=None):
+    '''
+    Attempts to move south
+    '''
+    M = 1
+    if self.curLoc in self.dirtList:
+      #print("SOUTH?!?!?")
+      #return None
+      pass
+    if jump:
+      proposedLoc = jump[0]
+      M = jump[1]
+    else:
+      if self.curLoc[0] == theWorld.rows-1 or self.curLoc[1] == 0:
+        return None
+      proposedLoc = (self.curLoc[0]+1,self.curLoc[1]-1)
+      if theWorld.blocked(proposedLoc):
+        return None
+    newState = deepcopy(self)
+    newState.curLoc = proposedLoc
+    for i in range(0,M):
+      newState.actions.append('SW')
+    return newState
+
+  def moveSouthEast(self, theWorld, jump=None):
+    '''
+    Attempts to move south
+    '''
+    M = 1
+    if self.curLoc in self.dirtList:
+      #print("SOUTH?!?!?")
+      #return None
+      pass
+    if jump:
+      proposedLoc = jump[0]
+      M = jump[1]
+    else:
+      if self.curLoc[0] == theWorld.rows-1 or self.curLoc[1] == theWorld.columns-1:
+        return None
+      proposedLoc = (self.curLoc[0]+1,self.curLoc[1]+1)
+      if theWorld.blocked(proposedLoc):
+        return None
+    newState = deepcopy(self)
+    newState.curLoc = proposedLoc
+    for i in range(0,M):
+      newState.actions.append('SE')
     return newState
 
   def moveEast(self, theWorld, jump=None):

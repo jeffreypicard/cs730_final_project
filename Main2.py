@@ -86,7 +86,7 @@ class Main:
         else:
           print("Error: Unknown heuristic")
           exit(1)
-        if len(sys.argv) == 4:
+        if len(sys.argv) > 3:
           if sys.argv[3] in self.speedups:
             self.speedup = sys.argv[3]
           else:
@@ -101,6 +101,7 @@ if __name__ == "__main__":
   main = Main()
   main.parseCommandLine()
   world = main.parseWorld()
+  world.EightWayMove = True
   #print( world.toString() )
   if main.speedup == 'rsr':
     world.RSRDecomposition()
@@ -128,5 +129,8 @@ if __name__ == "__main__":
 
   if endState != None:
     print( endState.toString() )
+    print( str(endState.pathCost()) )
     print(str(GlobalVars.nodesGenerated) + " nodes generated\n" +
           str(GlobalVars.nodesExpanded)  + " nodes expanded")
+  else:
+    print("No path found")
