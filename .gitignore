@@ -1,10 +1,4 @@
 *.pyc
-worlds
-vw-milestone-validator
-vw-validator
-vacuum-plan-reference
-make-vw
-*.vw
 *prof
 lol*
 *.out
