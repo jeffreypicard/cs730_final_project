@@ -265,7 +265,7 @@ class World:
     nList = self.pruneNeighbors( node, parentDis )
     #nList = self.neighbors( node )
     for n in nList:
-      print("Jumping")
+      #print("Jumping")
       n = self.jump( node, n[2], start, goals )
       if n:
         successors.append( n )
@@ -350,7 +350,7 @@ class World:
       lastMove = node[2][len(node[2])-1]
       if lastMove == 'V':
         lastMove = node[2][len(node[2])-2]
-      print("lastMove: " + lastMove )
+      #print("lastMove: " + lastMove )
 
       if lastMove == 'N':
         if n[0] >= 0 and not self.blocked( n ):

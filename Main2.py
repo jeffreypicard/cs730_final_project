@@ -101,8 +101,8 @@ if __name__ == "__main__":
   main = Main()
   main.parseCommandLine()
   world = main.parseWorld()
-  world.EightWayMove = True
   #print( world.toString() )
+  world.EightWayMove = True
   if main.speedup == 'rsr':
     world.RSRDecomposition()
   elif main.speedup == 'jps':
