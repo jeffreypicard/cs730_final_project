@@ -1,6 +1,8 @@
 '''
 World.py
 
+Code for a 'World' representation for A* search.
+
 Author: Jeffrey Picard
 '''
 
@@ -276,14 +278,6 @@ class World:
     '''
     Takes a node and returns its pruned neighbors.
     '''
-    #n1 = (node[0]-1,node[1],[ x for x in node[2] ], node[3]+1 ) # North
-    #n2 = (node[0]+1,node[1],[ x for x in node[2] ], node[3]+1 ) # South
-    #n3 = (node[0],node[1]-1,[ x for x in node[2] ], node[3]+1 ) # West
-    #n4 = (node[0],node[1]+1,[ x for x in node[2] ], node[3]+1 ) # East
-    #n1 = (node[0]-1,node[1],['N'], node[3]+1 ) # North
-    #n2 = (node[0]+1,node[1],['S'], node[3]+1 ) # South
-    #n3 = (node[0],node[1]-1,['W'], node[3]+1 ) # West
-    #n4 = (node[0],node[1]+1,['E'], node[3]+1 ) # East
     n   = (node[0]-1,node[1],'N') # North
     nw  = (node[0]-1,node[1]-1,'NW')
     ne  = (node[0]-1,node[1]+1,'NE')
@@ -293,42 +287,7 @@ class World:
     w   = (node[0],node[1]-1,'W') # West
     e   = (node[0],node[1]+1,'E') # East
     neighbors = []
-    '''
-    elif parentDis > 1:
-      lastMove = node[2][len(node[2])-1]
-      if lastMove == 'V':
-        lastMove = node[2][len(node[2])-2]
 
-      #print("Last move: " + lastMove )
-      if lastMove != 'S' and n1[0] >= 0 and not self.blocked( n1 ):
-        #n1[2].append('N')
-        neighbors.append( n1 )
-      if lastMove != 'N' and n2[0] < self.rows and not self.blocked( n2 ):
-        #n2[2].append('S')
-        neighbors.append( n2 )
-      if lastMove != 'E' and n3[1] >= 0 and not self.blocked( n3 ):
-        #n3[2].append('W')
-        neighbors.append( n3 )
-      if lastMove != 'W' and n4[1] < self.columns and not self.blocked( n4 ):
-        #n4[2].append('E')
-        neighbors.append( n4 )
-    '''
-    #if node[2] == []:
-    '''
-    if True:
-      if n1[0] >= 0 and not self.blocked( n1 ):
-        #n1[2].append('N')
-        neighbors.append( n1 )
-      if n2[0] < self.rows and not self.blocked( n2 ):
-        #n2[2].append('S')
-        neighbors.append( n2 )
-      if n3[1] >= 0 and not self.blocked( n3 ):
-        #n3[2].append('W')
-        neighbors.append( n3 )
-      if n4[1] < self.columns and not self.blocked( n4 ):
-        #n4[2].append('E')
-        neighbors.append( n4 )
-    '''
     if node[2] == [] or node[2][len(node[2])-1] == 'V':
       if n[0] >= 0 and not self.blocked( n ):
         neighbors.append( n )
@@ -443,77 +402,6 @@ class World:
       else:
         print("Error: bad lastMove")
         exit(1)
-
-    '''
-    else:
-      lastMove = node[2][len(node[2])-1]
-      if lastMove == 'V':
-        lastMove = node[2][len(node[2])-2]
-      if lastMove == 'N':
-        pX = (node[0]+1,node[1])
-        pXW = (node[0]+1,node[1]-1)
-        pXE = (node[0]+1,node[1]+1)
-        if n1[0] >= 0 and not self.blocked( n1 ):
-          #n1[2].append('N')
-          neighbors.append( n1 )
-        if pXW[1] >= 0 and self.blocked( pXW ):
-          if not self.blocked( n3 ):
-            #n3[2].append('W')
-            neighbors.append( n3 )
-        if pXE[1] < self.columns and self.blocked( pXE ):
-          if not self.blocked( n4 ):
-            #n4[2].append('E')
-            neighbors.append( n4 )
-      elif lastMove == 'S':
-        pX = (node[0]-1,node[1])
-        pXW = (node[0]-1,node[1]-1)
-        pXE = (node[0]-1,node[1]+1)
-        if n2[0] < 0 and not self.blocked( n2 ):
-          #n2[2].append('S')
-          neighbors.append( n2 )
-        if pXW[1] >= 0 and self.blocked( pXW ):
-          if not self.blocked( n3 ):
-            #n3[2].append('W')
-            neighbors.append( n3 )
-        if pXE[1] < self.columns and self.blocked( pXE ):
-          if not self.blocked( n4 ):
-            #n4[2].append('E')
-            neighbors.append( n4 )
-      elif lastMove == 'W':
-        pX = (node[0],node[1]+1)
-        pXN = (node[0]-1,node[1]+1) # North
-        pXS = (node[0]+1,node[1]+1) # South
-        if n3[1] >= 0 and not self.blocked( n3 ):
-          #n3[2].append('W')
-          neighbors.append( n3 )
-        if pXN[0] >= 0 and self.blocked( pXN ):
-          if not self.blocked( n1 ):
-            #n1[2].append('N')
-            neighbors.append( n1 )
-        if pXS[0] < self.rows and self.blocked( pXS ):
-          #print("pXS blocked.")
-          if not self.blocked( n2 ):
-            #n2[2].append('S')
-            neighbors.append( n2 )
-      elif lastMove == 'E':
-        pX = (node[0],node[1]-1)
-        pXN = (node[0]-1,node[1]-1) # North
-        pXS = (node[0]+1,node[1]-1) # South
-        if n4[1] < self.columns and not self.blocked( n4 ):
-          #n4[2].append('E')
-          neighbors.append( n4 )
-        if pXN[0] >= 0 and self.blocked( pXN ):
-          if not self.blocked( n1 ):
-            #n1[2].append('N')
-            neighbors.append( n1 )
-        if pXS[0] < self.rows and self.blocked( pXS ):
-          if not self.blocked( n2 ):
-            #n2[2].append('S')
-            neighbors.append( n2 )
-      else:
-        print("Error: bad lastMove " + lastMove )
-        exit(1)
-      '''
 
     return neighbors
 

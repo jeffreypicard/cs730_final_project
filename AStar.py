@@ -1,6 +1,8 @@
 '''
 AStar.py
 
+Code for an A* implementation in python.
+
 Author: Jeffrey Picard
 '''
 
@@ -12,7 +14,7 @@ import GlobalVars
 
 class AStar:
   '''
-  Class for AStar search
+  Class for A* search algorithm.
   '''
 
   def __init__(self):

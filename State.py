@@ -1,7 +1,9 @@
 '''
 State.py
 
-@author Jeffrey Picard
+Code for a state for A* search.
+
+Author: Jeffrey Picard
 '''
 
 from copy import deepcopy

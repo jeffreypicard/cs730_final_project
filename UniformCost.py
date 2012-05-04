@@ -1,6 +1,8 @@
 '''
 UniformCost.py
 
+Code for uniform cost search.
+
 Author: Jeffrey Picard
 '''
 

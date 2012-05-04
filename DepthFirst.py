@@ -1,6 +1,8 @@
 '''
 DepthFirst.py
 
+Code for a depth first search implementation in python.
+
 Author: Jeffrey Picard
 '''
 
@@ -11,7 +13,7 @@ import GlobalVars
 
 class DepthFirst:
   '''
-  Implements depth first searches
+  Implements depth first searches.
   '''
 
   def __init__(self):

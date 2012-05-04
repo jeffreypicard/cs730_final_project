@@ -1,7 +1,7 @@
 '''
-Assignment1.py
+Main.py
 
-Assignment 1 for CS730... Let's try it in python this time.
+Assignment 1 for CS730.
 
 Author: Jeffrey Picard
 '''

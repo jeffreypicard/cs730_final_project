@@ -1,6 +1,8 @@
 '''
 StateNode.py
 
+Code for a state node for A* search.
+
 Author Jeffrey Picard
 '''
 
