@@ -50,7 +50,18 @@ class Main:
     }
 
     self.speedup = ''
+
+    self.experiments = 1
     
+  def parseExperiments( self ):
+    '''
+    Checks to see if the number of experiments was specified.
+    '''
+    first = sys.stdin.readline()
+    if first.startswith("experiments"):
+      self.experiments = int(first[11:])
+    else:
+      sys.stdin.seek(0,0)
 
   def parseWorld(self):
     '''
@@ -100,37 +111,39 @@ class Main:
 if __name__ == "__main__":
   main = Main()
   main.parseCommandLine()
-  world = main.parseWorld()
-  #print( world.toString() )
-  world.EightWayMove = True
-  if main.speedup == 'rsr':
-    world.RSRDecomposition()
-  elif main.speedup == 'jps':
-    world.jps = True
-  startState = State( world.start, world.dirt )
+  main.parseExperiments()
+  for i in range(0,main.experiments):
+    world = main.parseWorld()
+    #print( world.toString() )
+    world.EightWayMove = True
+    if main.speedup == 'rsr':
+      world.RSRDecomposition()
+    elif main.speedup == 'jps':
+      world.jps = True
+    startState = State( world.start, world.dirt )
 
-  endState = None
-  if main.algorithm == 'depth-first':
-    algo = DepthFirst()
-    #endState = algo.search( startState, world )
-    #Does regular depth first, just calls the recursive version
-    #of regular depth first search with no depth limit
-    endState = algo.iterativeSearch( startState, world, -1)
-  elif main.algorithm == 'depth-first-id':
-    algo = DepthFirst()
-    endState = algo.iterativeSearch( startState, world, 1 )
-  elif main.algorithm == 'uniform-cost':
-    algo = UniformCost()
-    endState = algo.search( startState, world )
-  elif main.algorithm == 'a-star':
-    algo = AStar()
-    endState = algo.search( startState, world, main.heuristic )
-    #cProfile.run('algo.search( startState, world, main.heuristic )', 'a_star_prof')
+    endState = None
+    if main.algorithm == 'depth-first':
+      algo = DepthFirst()
+      #endState = algo.search( startState, world )
+      #Does regular depth first, just calls the recursive version
+      #of regular depth first search with no depth limit
+      endState = algo.iterativeSearch( startState, world, -1)
+    elif main.algorithm == 'depth-first-id':
+      algo = DepthFirst()
+      endState = algo.iterativeSearch( startState, world, 1 )
+    elif main.algorithm == 'uniform-cost':
+      algo = UniformCost()
+      endState = algo.search( startState, world )
+    elif main.algorithm == 'a-star':
+      algo = AStar()
+      endState = algo.search( startState, world, main.heuristic )
+      #cProfile.run('algo.search( startState, world, main.heuristic )', 'a_star_prof')
 
-  if endState != None:
-    print( endState.toString() )
-    print( str(endState.pathCost()) )
-    print(str(GlobalVars.nodesGenerated) + " nodes generated\n" +
-          str(GlobalVars.nodesExpanded)  + " nodes expanded")
-  else:
-    print("No path found")
+    if endState != None:
+      print( endState.toString() )
+      print( str(endState.pathCost()) )
+      print(str(GlobalVars.nodesGenerated) + " nodes generated\n" +
+            str(GlobalVars.nodesExpanded)  + " nodes expanded")
+    else:
+      print("No path found")

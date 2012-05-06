@@ -1,0 +1,86 @@
+\documentclass[12pt]{article}
+
+\usepackage{epsfig}
+\usepackage{rotating}
+\usepackage{lscape}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{theorem}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{citesort}
+\usepackage{float}
+\usepackage{color}
+\usepackage{array}
+\usepackage{color}
+\usepackage{array}
+\usepackage{float}
+\usepackage{url}
+\usepackage{setspace}
+%\usepackage{amsmath,amsfonts,amssymb,cite,array,graphicx}
+
+\textwidth=17.36cm
+\textheight=23.90cm
+\hoffset=-2.37cm
+\voffset=-2.5cm
+\parskip=1pt
+
+\renewcommand{\rmdefault}{ptm}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{remark}{Remark}[section]
+
+
+\date{\small\today} \title{CS730 Final Project} \author{Jeffrey Picard} 
+\doublespacing
+
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+In this paper two different methods of speeding up A* search through symmetry reduction are explored. Some considerations for implementation are mentioned,
+and it is shown that each method may be extended to slightly larger set of problems than previously considered.
+\end{abstract}
+
+
+% main text
+\section{Introduction}
+The two methods that were explored are Rectangular Symmetry Reduction (RSR) and Jump Point Symmetries (JPS). RSR identifies large empty spaces
+in the search space and removes them leaving only the exterior nodes and inserting ``macro edges'' so an agent may jump across the space in order to preserve
+optimality. JPS by contrast in an online method that is done by recursively pruning all neighbors of the current node that can be optimally reached by the 
+node's parent without going through the current node. The recursion ends when a node is found that cannot be reached optimally by the current node's parent. 
+Therefore the optimal path to it is through the current node. JPS as it was first introduced in\cite{Har2011} was only stipulated to work for a single goal.
+In this paper it is shown that this was easily also be extended to multiple goals and optimality is maintained. Practical considerations for the implementation
+of these algorithms are also discussed.
+	
+\section{Implementation}
+This problem is interesting because both RSR and JPS have shown encouraging results in increasing the speed of A* and they preserve optimality. In addition to
+this both of these methods are not inherently mutually exclusive to other methods of increasing the performance of A* such as ``swaps''  and the ``dead-end
+heuristic''\cite{Har2010,Har2011}.  Therefore an even greater performance increase could be possible by combining these methods with existing ones. 
+Even though JPS showed better overall performance than RSR, RSR is also interesting in that it raises the question of the possibility of other ways to do 
+preprocessing on a map in order to decrease search time. 
+
+\section{Results}
+I will address this problem by implementing both RSR and JPS and comparing their performance with that of normal A*. The implementation of the two symmetry
+breaking methods will be the main portion of the project and it will be tested on maps from movingai.com. An additional piece that would be interesting to 
+look at is implementing 8-way movement and seeing if JPS fairs better or worse in that context (RSR, being done mostly offline shouldn't see much of a 
+difference in whether or note 8-way movement is allowed). Also implementing other methods for speeding up A*, such as hierarchical methods or another method of
+removing unnecessary paths like ``swaps'' or the ``dead-end heuristic'', and seeing how they do in conjunction with RSR and JPS could provide insight into 
+the feasibility of actually combining them with other methods.
+
+\section{Conslusion}
+I will have plots showing the speed up factor vs path length for each of the different maps I test on. The graphs will show both time and node expansions.
+
+\section{Further Work}
+This will be a solo project, so I will be doing all of the work myself.
+
+\bibliographystyle{elsarticle-num}
+\bibliography{main_ai}
+
+
+\end{document}
