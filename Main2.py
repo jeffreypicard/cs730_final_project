@@ -7,6 +7,7 @@ Author: Jeffrey Picard
 '''
 
 import sys
+import time
 import cProfile
 
 from World import World
@@ -65,7 +66,7 @@ class Main:
 
   def parseWorld(self):
     '''
-    Parses the world representation from standerd in.
+    Parses the world representation from standard in.
     '''
     columns = int(sys.stdin.readline())
     rows    = int(sys.stdin.readline())
@@ -112,12 +113,19 @@ if __name__ == "__main__":
   main = Main()
   main.parseCommandLine()
   main.parseExperiments()
+  #main.experiments = main.experiments / 5
+  timingStart = [ 0.0 for x in range(0,main.experiments) ]
+  timingEnd = [ 0.0 for x in range(0,main.experiments) ]
+  nodeGenList = [ 0 for x in range(0,main.experiments) ]
+  nodeExpList = [ 0 for x in range(0,main.experiments) ]
   for i in range(0,main.experiments):
+    timingStart[i] = time.time()
     world = main.parseWorld()
     #print( world.toString() )
-    world.EightWayMove = True
+    #world.EightWayMove = True
     if main.speedup == 'rsr':
       world.RSRDecomposition()
+      world.EightWayMove = False
     elif main.speedup == 'jps':
       world.jps = True
     startState = State( world.start, world.dirt )
@@ -139,11 +147,37 @@ if __name__ == "__main__":
       algo = AStar()
       endState = algo.search( startState, world, main.heuristic )
       #cProfile.run('algo.search( startState, world, main.heuristic )', 'a_star_prof')
+    
+    timingEnd[i] = time.time()
+    nodeGenList[i] = GlobalVars.nodesGenerated
+    nodeExpList[i] = GlobalVars.nodesExpanded
 
     if endState != None:
-      print( endState.toString() )
-      print( str(endState.pathCost()) )
-      print(str(GlobalVars.nodesGenerated) + " nodes generated\n" +
-            str(GlobalVars.nodesExpanded)  + " nodes expanded")
+      #print( endState.toString() )
+      #print( str(endState.pathCost()) )
+      #print(str(GlobalVars.nodesGenerated) + " nodes generated\n" +
+      #      str(GlobalVars.nodesExpanded)  + " nodes expanded")
+      print( str(endState.pathCost()) + " " + str(timingEnd[i]-timingStart[i]) + " " + 
+             str(GlobalVars.nodesGenerated) + " " + str(GlobalVars.nodesExpanded) )
     else:
       print("No path found")
+    GlobalVars.nodesGenerated = 0
+    GlobalVars.nodesExpanded = 0
+    
+  '''
+  timingTotal = [ x - y for x,y in zip(timingEnd,timingStart) ]
+  totalTime = sum(timingTotal)
+  avgTime = totalTime / main.experiments
+  totalNodeGen = sum( nodeGenList )
+  totalNodeExp = sum( nodeExpList )
+  avgNodeGen = totalNodeGen / main.experiments
+  avgNodeExp = totalNodeExp / main.experiments
+  print("\n########## Performance Statistics ##########\n")
+  print("#TotalTime AverageTime TotalNodesGenerated Average")
+  print("Total Time: " + str(totalTime) )
+  print("Average Time: " + str(avgTime) )
+  print("\nTotal Nodes Generated: " + str(totalNodeGen) )
+  print("Average Nodes Generated: " + str(avgNodeGen) )
+  print("\nTotal Nodes Expanded: " + str(totalNodeExp) )
+  print("Average Nodes Expanded: " + str(avgNodeExp) )
+  '''
