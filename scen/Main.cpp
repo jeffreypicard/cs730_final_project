@@ -16,8 +16,11 @@ using namespace std;
 
 int main( int argc, char** argv )
 {
-  if( argc != 2 )
-    EXIT_WITH_ERROR("Usage: a.out <scen_file_name>\n");
+  int exp = -1;
+  if( argc != 2 && argc != 3 )
+    EXIT_WITH_ERROR("Usage: a.out <scen_file_name> [experiment_num]\n");
+  if( argc == 3 )
+    exp = atoi( argv[2] );
 
   ScenarioLoader *scen = new ScenarioLoader( argv[1] );
 
@@ -32,8 +35,10 @@ int main( int argc, char** argv )
   sc->ConvertMap();
 
   //sc->PrintMap();
-
-  sc->PrintAllExperiments();
+  if( exp >= 0 )
+    sc->PrintNthExperiment( exp );
+  else
+    sc->PrintAllExperiments();
 
   delete sc;
 

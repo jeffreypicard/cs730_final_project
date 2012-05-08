@@ -53,6 +53,10 @@ class Main:
     self.speedup = ''
 
     self.experiments = 1
+
+    self.EightWayMove = True
+
+    self.columns = None # Hack
     
   def parseExperiments( self ):
     '''
@@ -62,13 +66,18 @@ class Main:
     if first.startswith("experiments"):
       self.experiments = int(first[11:])
     else:
-      sys.stdin.seek(0,0)
+      #sys.stdin.seek(0,0)
+      self.columns = int(first)
 
   def parseWorld(self):
     '''
     Parses the world representation from standard in.
     '''
-    columns = int(sys.stdin.readline())
+    # Hack
+    if not self.columns:
+      columns = int(sys.stdin.readline())
+    else:
+      columns = self.columns
     rows    = int(sys.stdin.readline())
     worldData = []
     for i in range(0,rows):
@@ -101,6 +110,8 @@ class Main:
         if len(sys.argv) > 3:
           if sys.argv[3] in self.speedups:
             self.speedup = sys.argv[3]
+          elif sys.argv[3] == '4':
+            self.EightWayMove = False
           else:
             print("Error: Unknown speed-up algorithm")
             exit(1)
@@ -121,8 +132,10 @@ if __name__ == "__main__":
   for i in range(0,main.experiments):
     timingStart[i] = time.time()
     world = main.parseWorld()
+    if not world.validWorld():
+      continue
     #print( world.toString() )
-    #world.EightWayMove = True
+    world.EightWayMove = main.EightWayMove
     if main.speedup == 'rsr':
       world.RSRDecomposition()
       world.EightWayMove = False

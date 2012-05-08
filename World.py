@@ -33,6 +33,12 @@ class World:
     self.jps      = False
     self.EightWayMove = False
   
+  def validWorld( self ):
+    '''
+    Checks to see if the world is valid.
+    '''
+    return self.start and self.dirt
+
   def blocked(self, loc):
     '''
     Returns true or false about whether the position
@@ -150,6 +156,7 @@ class World:
       r.fixEdges( self.edges, self.dirt )
     #for edge in self.edges:
     #  print( str(edge) + ": " + str(self.edges[edge]))
+    print( self.RSRDataToString() )
 
   def calcPriority( self, room ):
     '''
@@ -204,7 +211,6 @@ class World:
     # edges[(x,y,direction)] = ((i,j),length)
     edges = {}
     for room in rooms:
-      '''
       i_b = room.ul[0]+1
       j_b = room.ul[1]+1
       i_e = room.br[0]-1
@@ -212,7 +218,6 @@ class World:
       for i in range(i_b,i_e):
         for j in range(j_b,j_e):
           self.RSRData[i][j] = '!'
-      '''
       i_b = room.ul[0]+1
       j_b = room.ul[1]
       i_e = room.br[0]-1

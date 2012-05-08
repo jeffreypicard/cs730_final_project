@@ -72,8 +72,8 @@ void ScenarioConverter::PrintAllExperiments( void )
 {
   int num_experiments, i;
   num_experiments = this->scen->GetNumExperiments();
-  cout << "experiments " << num_experiments << '\n';
-  for( i = 0; i < num_experiments; i++ )
+  cout << "experiments " << num_experiments / 50 << '\n';
+  for( i = 0; i < num_experiments; i += 50 )
   {
     cerr << "i: " << i << '\n';
     this->PrintNthExperiment( i );

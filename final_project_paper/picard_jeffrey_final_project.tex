@@ -43,8 +43,13 @@
 
 
 \begin{abstract}
-In this paper two different methods of speeding up A* search through symmetry reduction are explored. Some considerations for implementation are mentioned,
-and it is shown that each method may be extended to slightly larger set of problems than previously considered.
+There is wide usage in AI, robotics and video games of pathfinding on uniform cost grids. The ability the speed up the search time of algorithms like A*
+which is ubiquitious in this area is extremely important. Some approaches, such as hierachical methods, have shown success in accomplishing this but at
+the cost of optimality[ref]. A recent idea for another method to speed up A* search on uniform cost grids, called ``Symmetry Reduction'' or ``Symmetry Breaking'' 
+is to detect and remove symmetric paths from the search space and thus save node generations and time. Symmetric paths are defined as path which start and end
+in the same location, have the same length and may be transformed into each other through a reordering of the vertices that make up the path.
+In this paper two different methods of speeding up A* search through symmetry reduction are explored. Some considerations for implementation are also mentioned.
+%and it is shown that each method may be extended to slightly larger set of problems than previously considered.
 \end{abstract}
 
 
@@ -59,6 +64,19 @@ In this paper it is shown that this was easily also be extended to multiple goal
 of these algorithms are also discussed.
 	
 \section{Implementation}
+In the JPS algorithm before a node is expanded its neighbors are pruned according to two rules which determine which neighbors may not be reached
+optimally from the node's parent without traversing that node. The idea behind them is exactly the same but a slighlt different contraint is placed
+for diagonal moves as opposed to straight ones. For straight moves any node $n$ which satisfies the following inequality is pruned.
+
+$len( <p(x),...,n> \setminus x ) \le len( <p(x),x,n> )$
+
+That is, any neighbor node which may be reached from the parent of x -- without going through x -- is pruned. For diagonal moves the inequality simply
+becomes strictly less than, thus any node $n$ such that.
+
+$len( <p(x),...,n> \setminus x ) < len( <p(x),x,n> )$
+
+is pruned.
+% In order for RSR to preserve optimality another step beyond just the macro edges needs to be taken.
 This problem is interesting because both RSR and JPS have shown encouraging results in increasing the speed of A* and they preserve optimality. In addition to
 this both of these methods are not inherently mutually exclusive to other methods of increasing the performance of A* such as ``swaps''  and the ``dead-end
 heuristic''\cite{Har2010,Har2011}.  Therefore an even greater performance increase could be possible by combining these methods with existing ones. 
