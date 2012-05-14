@@ -7,7 +7,6 @@ lol*
 *.out
 *.dat
 *.csv
-*.eps
 *.bak
 # latex generated files.
 *.aux
